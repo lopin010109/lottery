@@ -1,442 +1,540 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>抽獎系統</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f0f1a" />
+    <link rel="manifest" href="manifest.json" />
+    <title>抽獎系統</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-      background: #0f0f1a;
-      color: #fff;
-      min-height: 100vh;
-      padding: 28px 16px 40px;
-    }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+        background: #0f0f1a;
+        color: #fff;
+        min-height: 100vh;
+        padding: 28px 16px 40px;
+      }
 
-    .page-wrapper {
-      max-width: 900px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+      .page-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
 
-    h1 {
-      font-size: clamp(22px, 5vw, 30px);
-      font-weight: 800;
-      color: #ffd700;
-      margin-bottom: 24px;
-      letter-spacing: 2px;
-      text-align: center;
-    }
+      h1 {
+        font-size: clamp(22px, 5vw, 30px);
+        font-weight: 800;
+        color: #ffd700;
+        margin-bottom: 24px;
+        letter-spacing: 2px;
+        text-align: center;
+      }
 
-    /* Desktop: two columns */
-    .layout {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      width: 100%;
-    }
-
-    @media (min-width: 700px) {
+      /* Desktop: two columns */
       .layout {
-        flex-direction: row;
-        align-items: flex-start;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
       }
-      .card-control { flex: 1; }
-      .card-history { flex: 1; }
-    }
 
-    .card {
-      background: #1a1a2e;
-      border-radius: 20px;
-      padding: 22px 20px;
-      border: 1px solid #2a2a45;
-      width: 100%;
-    }
+      @media (min-width: 700px) {
+        .layout {
+          flex-direction: row;
+          align-items: flex-start;
+        }
+        .card-control {
+          flex: 1;
+        }
+        .card-history {
+          flex: 1;
+        }
+      }
 
-    .section-label {
-      font-size: 13px;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-    }
+      .card {
+        background: #1a1a2e;
+        border-radius: 20px;
+        padding: 22px 20px;
+        border: 1px solid #2a2a45;
+        width: 100%;
+      }
 
-    /* Range inputs */
-    .range-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+      .section-label {
+        font-size: 13px;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+      }
 
-    .range-row input {
-      flex: 1;
-      min-width: 0;
-      background: #0d0d20;
-      border: 2px solid #2e2e50;
-      border-radius: 12px;
-      padding: 14px 8px;
-      color: #fff;
-      font-size: clamp(16px, 4vw, 20px);
-      font-weight: 700;
-      text-align: center;
-      outline: none;
-      transition: border-color 0.2s;
-      -moz-appearance: textfield;
-    }
+      /* Range inputs */
+      .range-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
-    .range-row input::-webkit-outer-spin-button,
-    .range-row input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-    }
+      .range-row input {
+        flex: 1;
+        min-width: 0;
+        background: #0d0d20;
+        border: 2px solid #2e2e50;
+        border-radius: 12px;
+        padding: 14px 8px;
+        color: #fff;
+        font-size: clamp(16px, 4vw, 20px);
+        font-weight: 700;
+        text-align: center;
+        outline: none;
+        transition: border-color 0.2s;
+        -moz-appearance: textfield;
+      }
 
-    .range-row input:focus {
-      border-color: #ffd700;
-    }
+      .range-row input::-webkit-outer-spin-button,
+      .range-row input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+      }
 
-    .range-sep {
-      color: #555;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
+      .range-row input:focus {
+        border-color: #ffd700;
+      }
 
-    .error-msg {
-      color: #ff6b6b;
-      font-size: 13px;
-      margin-top: 10px;
-      display: none;
-    }
+      .range-sep {
+        color: #555;
+        font-size: 20px;
+        flex-shrink: 0;
+      }
 
-    /* Toggle */
-    .toggle-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 18px;
-      padding-top: 18px;
-      border-top: 1px solid #2a2a45;
-    }
+      .error-msg {
+        color: #ff6b6b;
+        font-size: 13px;
+        margin-top: 10px;
+        display: none;
+      }
 
-    .toggle-label { font-size: 15px; color: #ccc; }
+      /* Toggle */
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid #2a2a45;
+      }
 
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 52px;
-      height: 28px;
-      flex-shrink: 0;
-    }
+      .toggle-label {
+        font-size: 15px;
+        color: #ccc;
+      }
 
-    .switch input { opacity: 0; width: 0; height: 0; }
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 28px;
+        flex-shrink: 0;
+      }
 
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      inset: 0;
-      background: #333;
-      border-radius: 28px;
-      transition: 0.25s;
-    }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
 
-    .slider::before {
-      content: '';
-      position: absolute;
-      height: 22px;
-      width: 22px;
-      left: 3px;
-      bottom: 3px;
-      background: #fff;
-      border-radius: 50%;
-      transition: 0.25s;
-    }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: #333;
+        border-radius: 28px;
+        transition: 0.25s;
+      }
 
-    input:checked + .slider { background: #ffd700; }
-    input:checked + .slider::before { transform: translateX(24px); }
+      .slider::before {
+        content: '';
+        position: absolute;
+        height: 22px;
+        width: 22px;
+        left: 3px;
+        bottom: 3px;
+        background: #fff;
+        border-radius: 50%;
+        transition: 0.25s;
+      }
 
-    /* Draw button */
-    .btn-draw {
-      width: 100%;
-      padding: 18px;
-      margin-top: 20px;
-      border: none;
-      border-radius: 14px;
-      font-size: clamp(17px, 4vw, 20px);
-      font-weight: 800;
-      cursor: pointer;
-      background: linear-gradient(135deg, #ffd700, #ff9500);
-      color: #0f0f1a;
-      letter-spacing: 2px;
-      transition: opacity 0.2s, transform 0.1s;
-      -webkit-tap-highlight-color: transparent;
-    }
+      input:checked + .slider {
+        background: #ffd700;
+      }
+      input:checked + .slider::before {
+        transform: translateX(24px);
+      }
 
-    .btn-draw:hover { opacity: 0.9; }
-    .btn-draw:active { transform: scale(0.97); }
-    .btn-draw:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+      /* Draw button */
+      .btn-draw {
+        width: 100%;
+        padding: 18px;
+        margin-top: 20px;
+        border: none;
+        border-radius: 14px;
+        font-size: clamp(17px, 4vw, 20px);
+        font-weight: 800;
+        cursor: pointer;
+        background: linear-gradient(135deg, #ffd700, #ff9500);
+        color: #0f0f1a;
+        letter-spacing: 2px;
+        transition:
+          opacity 0.2s,
+          transform 0.1s;
+        -webkit-tap-highlight-color: transparent;
+      }
 
-    .btn-reset {
-      width: 100%;
-      padding: 13px;
-      margin-top: 10px;
-      border: 1px solid #2a2a45;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      background: transparent;
-      color: #888;
-      letter-spacing: 1px;
-      transition: color 0.2s, border-color 0.2s;
-      -webkit-tap-highlight-color: transparent;
-    }
+      .btn-draw:hover {
+        opacity: 0.9;
+      }
+      .btn-draw:active {
+        transform: scale(0.97);
+      }
+      .btn-draw:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
 
-    .btn-reset:hover { color: #ccc; border-color: #555; }
-    .btn-reset:active { color: #ccc; border-color: #555; }
+      .btn-reset {
+        width: 100%;
+        padding: 13px;
+        margin-top: 10px;
+        border: 1px solid #2a2a45;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        background: transparent;
+        color: #888;
+        letter-spacing: 1px;
+        transition:
+          color 0.2s,
+          border-color 0.2s;
+        -webkit-tap-highlight-color: transparent;
+      }
 
-    /* Loading */
-    .loading {
-      display: none;
-      text-align: center;
-      padding: 32px 0 20px;
-    }
+      .btn-reset:hover {
+        color: #ccc;
+        border-color: #555;
+      }
+      .btn-reset:active {
+        color: #ccc;
+        border-color: #555;
+      }
 
-    .spinner {
-      width: 52px;
-      height: 52px;
-      border: 4px solid #2a2a45;
-      border-top-color: #ffd700;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin: 0 auto 14px;
-    }
+      /* Loading */
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 32px 0 20px;
+      }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+      .spinner {
+        width: 52px;
+        height: 52px;
+        border: 4px solid #2a2a45;
+        border-top-color: #ffd700;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        margin: 0 auto 14px;
+      }
 
-    .loading-text { font-size: 15px; color: #888; }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
 
-    /* Result */
-    .result-area {
-      display: none;
-      text-align: center;
-      padding: 28px 0 12px;
-    }
+      .loading-text {
+        font-size: 15px;
+        color: #888;
+      }
 
-    .result-label {
-      font-size: 13px;
-      color: #888;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
+      /* Result */
+      .result-area {
+        display: none;
+        text-align: center;
+        padding: 28px 0 12px;
+      }
 
-    .result-number {
-      font-size: clamp(120px, 35vw, 220px);
-      font-weight: 900;
-      color: #ffd700;
-      line-height: 1;
-      letter-spacing: -4px;
-      word-break: break-all;
-    }
+      .result-label {
+        font-size: 13px;
+        color: #888;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
 
-    /* All drawn notice */
-    .all-drawn-msg {
-      display: none;
-      text-align: center;
-      color: #ffd700;
-      font-size: 15px;
-      padding: 16px 0 4px;
-      font-weight: 600;
-    }
+      .result-number {
+        font-size: clamp(120px, 35vw, 220px);
+        font-weight: 900;
+        color: #ffd700;
+        line-height: 1;
+        letter-spacing: -4px;
+        word-break: break-all;
+      }
 
-    /* History */
-    .history-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
+      /* All drawn notice */
+      .all-drawn-msg {
+        display: none;
+        text-align: center;
+        color: #ffd700;
+        font-size: 15px;
+        padding: 16px 0 4px;
+        font-weight: 600;
+      }
 
-    .history-title { font-size: 15px; font-weight: 700; }
+      /* History */
+      .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+      }
 
-    .badge {
-      background: #2e2e50;
-      border-radius: 12px;
-      padding: 3px 10px;
-      font-size: 12px;
-      color: #aaa;
-    }
+      .history-title {
+        font-size: 15px;
+        font-weight: 700;
+      }
 
-    .history-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+      .badge {
+        background: #2e2e50;
+        border-radius: 12px;
+        padding: 3px 10px;
+        font-size: 12px;
+        color: #aaa;
+      }
 
-    .history-item {
-      background: #0d0d20;
-      border: 1px solid #2a2a45;
-      border-radius: 10px;
-      padding: 8px 14px;
-      font-size: 17px;
-      font-weight: 700;
-      color: #fff;
-    }
+      .history-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
 
-    .history-item.latest {
-      border-color: #ffd700;
-      color: #ffd700;
-    }
+      .history-item {
+        background: #0d0d20;
+        border: 1px solid #2a2a45;
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 17px;
+        font-weight: 700;
+        color: #fff;
+      }
 
-    .history-empty {
-      color: #444;
-      font-size: 14px;
-      padding: 4px 0;
-    }
-  </style>
-</head>
-<body>
+      .history-item.latest {
+        border-color: #ffd700;
+        color: #ffd700;
+      }
 
-  <div class="page-wrapper">
-  <h1>抽獎系統</h1>
+      .history-empty {
+        color: #444;
+        font-size: 14px;
+        padding: 4px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <h1>抽獎系統</h1>
 
-  <div class="layout">
-  <div class="card card-control">
-    <div class="section-label">號碼範圍</div>
-    <div class="range-row">
-      <input type="number" id="minNum" placeholder="最小值" inputmode="numeric">
-      <span class="range-sep">～</span>
-      <input type="number" id="maxNum" placeholder="最大值" inputmode="numeric">
+      <div class="layout">
+        <div class="card card-control">
+          <div class="section-label">號碼範圍</div>
+          <div class="range-row">
+            <input
+              type="number"
+              id="minNum"
+              placeholder="最小值"
+              inputmode="numeric"
+            />
+            <span class="range-sep">～</span>
+            <input
+              type="number"
+              id="maxNum"
+              placeholder="最大值"
+              inputmode="numeric"
+            />
+          </div>
+          <div class="error-msg" id="errorMsg">請輸入有效的號碼範圍</div>
+
+          <div class="toggle-row">
+            <label class="switch">
+              <input type="checkbox" id="noRepeat" checked />
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">不重複抽取</span>
+          </div>
+
+          <div class="all-drawn-msg" id="allDrawnMsg">🎉 所有號碼已抽完！</div>
+
+          <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div class="loading-text">抽獎中...</div>
+          </div>
+
+          <div class="result-area" id="resultArea">
+            <div class="result-label">中獎號碼</div>
+            <div class="result-number" id="resultNumber"></div>
+          </div>
+
+          <button class="btn-draw" id="drawBtn" onclick="draw()">
+            開始抽獎
+          </button>
+          <button class="btn-reset" onclick="resetAll()">重置</button>
+        </div>
+
+        <div class="card card-history">
+          <div class="history-header">
+            <div class="history-title">抽獎紀錄</div>
+            <div class="badge" id="historyBadge">0 筆</div>
+          </div>
+          <div class="history-list" id="historyList">
+            <div class="history-empty">尚無紀錄</div>
+          </div>
+        </div>
+      </div>
+      <!-- /.layout -->
     </div>
-    <div class="error-msg" id="errorMsg">請輸入有效的號碼範圍</div>
+    <!-- /.page-wrapper -->
 
-    <div class="toggle-row">
-      <label class="switch">
-        <input type="checkbox" id="noRepeat" checked>
-        <span class="slider"></span>
-      </label>
-      <span class="toggle-label">不重複抽取</span>
-    </div>
-
-    <div class="all-drawn-msg" id="allDrawnMsg">🎉 所有號碼已抽完！</div>
-
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <div class="loading-text">抽獎中...</div>
-    </div>
-
-    <div class="result-area" id="resultArea">
-      <div class="result-label">中獎號碼</div>
-      <div class="result-number" id="resultNumber"></div>
-    </div>
-
-    <button class="btn-draw" id="drawBtn" onclick="draw()">開始抽獎</button>
-    <button class="btn-reset" onclick="resetAll()">重置</button>
-  </div>
-
-  <div class="card card-history">
-    <div class="history-header">
-      <div class="history-title">抽獎紀錄</div>
-      <div class="badge" id="historyBadge">0 筆</div>
-    </div>
-    <div class="history-list" id="historyList">
-      <div class="history-empty">尚無紀錄</div>
-    </div>
-  </div>
-  </div><!-- /.layout -->
-  </div><!-- /.page-wrapper -->
-
-  <script>
-    let drawnHistory = [];
-    let drawnSet = new Set();
-
-    function draw() {
-      const minVal = document.getElementById('minNum').value.trim();
-      const maxVal = document.getElementById('maxNum').value.trim();
-      const min = parseInt(minVal, 10);
-      const max = parseInt(maxVal, 10);
-      const noRepeat = document.getElementById('noRepeat').checked;
+    <script>
+      const drawBtn = document.getElementById('drawBtn');
+      const loading = document.getElementById('loading');
+      const resultArea = document.getElementById('resultArea');
+      const resultNumber = document.getElementById('resultNumber');
+      const allDrawnMsg = document.getElementById('allDrawnMsg');
       const errorMsg = document.getElementById('errorMsg');
+      const historyList = document.getElementById('historyList');
+      const historyBadge = document.getElementById('historyBadge');
 
-      // Validate
-      if (minVal === '' || maxVal === '' || isNaN(min) || isNaN(max) || min > max) {
-        errorMsg.style.display = 'block';
-        return;
+      let drawnHistory = [];
+      let drawnSet = new Set();
+
+      function show(el) {
+        el.style.display = 'block';
       }
-      errorMsg.style.display = 'none';
-
-      // Check if all numbers drawn
-      if (noRepeat && drawnSet.size >= (max - min + 1)) {
-        document.getElementById('allDrawnMsg').style.display = 'block';
-        return;
+      function hide(el) {
+        el.style.display = 'none';
+      }
+      function isAllDrawn(min, max) {
+        return drawnSet.size >= max - min + 1;
       }
 
-      // UI: loading state
-      document.getElementById('allDrawnMsg').style.display = 'none';
-      document.getElementById('resultArea').style.display = 'none';
-      document.getElementById('loading').style.display = 'block';
-      document.getElementById('drawBtn').disabled = true;
+      function draw() {
+        const minVal = document.getElementById('minNum').value.trim();
+        const maxVal = document.getElementById('maxNum').value.trim();
+        const min = parseInt(minVal, 10);
+        const max = parseInt(maxVal, 10);
+        const noRepeat = document.getElementById('noRepeat').checked;
 
-      setTimeout(() => {
-        let num;
+        if (
+          minVal === '' ||
+          maxVal === '' ||
+          isNaN(min) ||
+          isNaN(max) ||
+          min > max
+        ) {
+          show(errorMsg);
+          return;
+        }
+        hide(errorMsg);
 
-        if (noRepeat) {
-          const available = [];
-          for (let i = min; i <= max; i++) {
-            if (!drawnSet.has(i)) available.push(i);
+        if (noRepeat && isAllDrawn(min, max)) {
+          show(allDrawnMsg);
+          return;
+        }
+
+        hide(allDrawnMsg);
+        hide(resultArea);
+        show(loading);
+        drawBtn.disabled = true;
+
+        setTimeout(() => {
+          let num;
+          if (noRepeat) {
+            const available = [];
+            for (let i = min; i <= max; i++) {
+              if (!drawnSet.has(i)) available.push(i);
+            }
+            num = available[Math.floor(Math.random() * available.length)];
+            drawnSet.add(num);
+          } else {
+            num = Math.floor(Math.random() * (max - min + 1)) + min;
           }
-          num = available[Math.floor(Math.random() * available.length)];
-          drawnSet.add(num);
-        } else {
-          num = Math.floor(Math.random() * (max - min + 1)) + min;
-        }
 
-        // Show result
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('resultNumber').textContent = num;
-        document.getElementById('resultArea').style.display = 'block';
-        document.getElementById('drawBtn').disabled = false;
+          hide(loading);
+          resultNumber.textContent = num;
+          show(resultArea);
+          drawBtn.disabled = false;
 
-        // Update history
-        drawnHistory.unshift(num);
-        renderHistory();
+          drawnHistory.unshift(num);
+          if (drawnHistory.length > 500) drawnHistory.length = 500;
+          prependHistory(num);
 
-        // Check all drawn
-        if (noRepeat && drawnSet.size >= (max - min + 1)) {
-          document.getElementById('allDrawnMsg').style.display = 'block';
-          document.getElementById('drawBtn').disabled = true;
-        }
-      }, 900);
-    }
-
-    function renderHistory() {
-      const list = document.getElementById('historyList');
-      const badge = document.getElementById('historyBadge');
-      badge.textContent = `${drawnHistory.length} 筆`;
-
-      if (drawnHistory.length === 0) {
-        list.innerHTML = '<div class="history-empty">尚無紀錄</div>';
-        return;
+          if (noRepeat && isAllDrawn(min, max)) {
+            show(allDrawnMsg);
+            drawBtn.disabled = true;
+          }
+        }, 900);
       }
 
-      list.innerHTML = drawnHistory.map((n, i) =>
-        `<div class="history-item${i === 0 ? ' latest' : ''}">${n}</div>`
-      ).join('');
-    }
+      function prependHistory(num) {
+        historyBadge.textContent = `${drawnHistory.length} 筆`;
+        const empty = historyList.querySelector('.history-empty');
+        if (empty) empty.remove();
+        historyList
+          .querySelector('.history-item.latest')
+          ?.classList.remove('latest');
+        const item = document.createElement('div');
+        item.className = 'history-item latest';
+        item.textContent = num;
+        historyList.prepend(item);
+      }
 
-    function resetAll() {
-      drawnHistory = [];
-      drawnSet = new Set();
-      document.getElementById('resultArea').style.display = 'none';
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('allDrawnMsg').style.display = 'none';
-      document.getElementById('errorMsg').style.display = 'none';
-      document.getElementById('drawBtn').disabled = false;
-      renderHistory();
-    }
-  </script>
+      function renderHistory() {
+        historyBadge.textContent = `${drawnHistory.length} 筆`;
+        if (drawnHistory.length === 0) {
+          historyList.innerHTML = '<div class="history-empty">尚無紀錄</div>';
+          return;
+        }
+        historyList.innerHTML = drawnHistory
+          .map(
+            (n, i) =>
+              `<div class="history-item${i === 0 ? ' latest' : ''}">${n}</div>`,
+          )
+          .join('');
+      }
 
-</body>
+      function resetAll() {
+        drawnHistory = [];
+        drawnSet = new Set();
+        hide(resultArea);
+        hide(loading);
+        hide(allDrawnMsg);
+        hide(errorMsg);
+        drawBtn.disabled = false;
+        renderHistory();
+      }
+    </script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js');
+      }
+    </script>
+  </body>
 </html>
