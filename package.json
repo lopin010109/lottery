@@ -1,0 +1,25 @@
+{
+  "name": "lottery",
+  "version": "1.0.0",
+  "description": "抽獎系統",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "gh-pages -d ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lopin010109/lottery.git"
+  },
+  "keywords": [],
+  "author": "Joshhsieh",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lopin010109/lottery/issues"
+  },
+  "homepage": "https://github.com/lopin010109/lottery#readme",
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
+  }
+}
